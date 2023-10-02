@@ -9,7 +9,7 @@ Video is passed through untouched.
 
 ## Usage
 
-`perl bleep-silencer.pl input-video.mp4`
+`perl bleep-be-gone.pl input-video.mp4`
 
 The resulting video file is called `no_bleeps.mp4`.
 
