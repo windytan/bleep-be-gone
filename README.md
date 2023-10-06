@@ -13,14 +13,14 @@ Video is passed through untouched.
 
 The resulting video file is called `no_bleeps.mp4`.
 
-`-d` means dry run: Nothing is written out, instead you get a list of detected beeps.
+`-d` enables dry run: Nothing is written out, instead you get a list of detected beeps.
 
 There are some configurable constants inside the script; don't be afraid to modify!
-For instance, the frequency range is very permissive by default. You may want to change
-that to prevent false positives. Normally, censor bleeps are around 1000 Hz.
+For instance, the frequency range is quite permissive by default. You may want to change
+it if you get false positives. Normally, censor bleeps are around 1000 Hz.
 
 ## Caveats
 
 * It is a simple detector that gets confused by DC shift and maybe some beep-like sounds
 * It abruptly cuts off the sound, there is no cross-fade
-* It converts all audio to 44100 Hz stereo S16LE and re-compresses
+* Lossy re-compression of audio
