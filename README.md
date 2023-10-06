@@ -9,9 +9,11 @@ Video is passed through untouched.
 
 ## Usage
 
-`perl bleep-be-gone.pl input-video.mp4`
+`perl bleep-be-gone.pl [-d] input-video.mp4`
 
 The resulting video file is called `no_bleeps.mp4`.
+
+`-d` means dry run: Nothing is written out, instead you get a list of detected beeps.
 
 There are some configurable constants inside the script; don't be afraid to modify!
 For instance, the frequency range is very permissive by default. You may want to change

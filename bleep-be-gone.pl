@@ -12,8 +12,6 @@
 use warnings;
 use strict;
 
-die "Usage: perl bleep-be-gone.pl input-video.mp4" if (@ARGV != 1);
-
 use constant {
   # Audio sample rate
   FS             => 44100,
@@ -34,6 +32,15 @@ use constant {
   MIN_DISTANCE => FS / FMAX / 2,
 };
 
+
+my $is_dry_run = 0;
+if (($ARGV[0] // "") eq "-d") {
+  $is_dry_run = 1;
+  shift @ARGV;
+}
+
+die "Usage: perl bleep-be-gone.pl [-d] input-video.mp4" if (@ARGV != 1);
+
 # We use these circular buffers to enable look-ahead function
 my @detection_buffer = (0) x BUFFER_LEN;
 my @output_buffer_l  = (0) x BUFFER_LEN;
@@ -49,9 +56,13 @@ my $audio_format = "-f s16le -acodec pcm_s16le -ar ".FS." -ac 2";
 (my $in_video_file = $ARGV[0]) =~ s/([;<>\*\|&\$!#\(\)\[\]\{\}:'"\\])/\\$1/g;
 open my $in, "-|",  "ffmpeg -hide_banner -loglevel error -i \"$in_video_file\" $audio_format -"
                     or die ($!);
-open my $out, "|-", "ffmpeg -y -i \"$in_video_file\" $audio_format -i - ".
+my $out;
+
+if (not $is_dry_run) {
+  open $out,  "|-", "ffmpeg -y -i \"$in_video_file\" $audio_format -i - ".
                     "-c:v copy -map 0:v:0 -map 1:a:0 ".OUTPUT_FILE
                     or die ($!);
+}
 
 my $nsample                 = 0;
 my $output_store_ptr        = 0;
@@ -101,6 +112,10 @@ while (not eof $in) {
     for (my $i = $output_store_ptr; $i > $output_store_ptr - MIN_DURATION_S * FS; $i--) {
       $detection_buffer[$i] = 1;
     }
+
+    if ($is_dry_run) {
+      printf "Bleep @ %.1f s\n", $nsample / FS - MIN_DURATION_S;
+    }
   }
   $detection_buffer[$output_store_ptr] = $is_detected_long_enough;
   $was_previously_detected_long_enough = $is_detected_long_enough;
@@ -108,7 +123,7 @@ while (not eof $in) {
   my $output_write_ptr = ($output_store_ptr + 1) % BUFFER_LEN;
 
   # Skip empty buffer in the beginning...
-  if ($nsample >= BUFFER_LEN) {
+  if (!$is_dry_run && $nsample >= BUFFER_LEN) {
 
     # Output (possibly muted) audio
     print $out pack "s", $output_buffer_l[$output_write_ptr] *
@@ -121,4 +136,4 @@ while (not eof $in) {
   $nsample++;
 }
 close $in;
-close $out;
+close $out if (not $is_dry_run);
