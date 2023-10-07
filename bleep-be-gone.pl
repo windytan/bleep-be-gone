@@ -21,7 +21,7 @@ use constant {
   FMAX           => 1600,
 
   # Minimum duration to detect a beep (sec)
-  MIN_DURATION_S => 0.75,
+  MIN_DURATION_S => 0.500,
 
   OUTPUT_FILE    => "no_bleeps.mp4"
 };
@@ -53,7 +53,7 @@ my @noise_buffer     = map { (rand() - .5) * 1e-4 } 1..BUFFER_LEN;
 
 # Open input and output stream to ffmpeg.
 my $audio_format = "-f s16le -acodec pcm_s16le -ar ".FS." -ac 2";
-(my $in_video_file = $ARGV[0]) =~ s/([;<>\*\|&\$!#\(\)\[\]\{\}:'"\\])/\\$1/g;
+(my $in_video_file = $ARGV[0]) =~ s/(["])/\\$1/g;
 open my $in, "-|",  "ffmpeg -hide_banner -loglevel error -i \"$in_video_file\" $audio_format -"
                     or die ($!);
 my $out;
